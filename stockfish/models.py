@@ -18,6 +18,7 @@ class Stockfish:
     ) -> None:
         self.default_stockfish_params = {}
         self._id = {}
+        self._options = []
         self.stockfish = subprocess.Popen(
             path, universal_newlines=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE
         )
@@ -80,6 +81,7 @@ class Stockfish:
         while True:
             line = self._read_line()
             if line.startswith("option name"):
+                self._options.append(line)
                 name = line.split("option name")[1].split("type")[0].strip()
                 type_ = line.split("type")[1].split("default")[0].strip()
                 if type_ == "button":
@@ -105,6 +107,9 @@ class Stockfish:
 
     def get_id_author(self):
         return self._id["author"]
+
+    def get_options(self):
+        return self._options
 
     def _set_option(self, name: str, value: Any) -> None:
         if name.lower() == "clear hash":
