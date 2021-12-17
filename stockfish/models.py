@@ -17,7 +17,7 @@ class Stockfish:
         self, path: str = "stockfish", depth: int = 2, parameters: dict = None
     ) -> None:
         self.default_stockfish_params = {}
-        self.id = {}
+        self._id = {}
         self.stockfish = subprocess.Popen(
             path, universal_newlines=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE
         )
@@ -94,11 +94,17 @@ class Stockfish:
                 self.default_stockfish_params.update({name: value})
             elif line.startswith("id "):
                 if "id name" in line:
-                    self.id.update({"name": " ".join(line.split()[2:]).strip()})
+                    self._id.update({"name": " ".join(line.split()[2:]).strip()})
                 elif "id author" in line:
-                    self.id.update({"author": " ".join(line.split()[2:]).strip()})
+                    self._id.update({"author": " ".join(line.split()[2:]).strip()})
             if "uciok" in line:
                 return
+
+    def get_id_name(self):
+        return self._id["name"]
+
+    def get_id_author(self):
+        return self._id["author"]
 
     def _set_option(self, name: str, value: Any) -> None:
         if name.lower() == "clear hash":
