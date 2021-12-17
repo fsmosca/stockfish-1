@@ -111,6 +111,9 @@ class Stockfish:
     def get_options(self):
         return self._options
 
+    def set_option(self, name: str, value: Any) -> None:
+        self._set_option(name, value)
+
     def _set_option(self, name: str, value: Any) -> None:
         if name.lower() == "clear hash":
             self._put(f"setoption name {name}")
