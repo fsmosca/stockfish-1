@@ -16,22 +16,7 @@ class Stockfish:
     def __init__(
         self, path: str = "stockfish", depth: int = 2, parameters: dict = None
     ) -> None:
-        self.default_stockfish_params = {
-            "Write Debug Log": "false",
-            "Contempt": 0,
-            "Min Split Depth": 0,
-            "Threads": 1,
-            "Ponder": "false",
-            "Hash": 16,
-            "MultiPV": 1,
-            "Skill Level": 20,
-            "Move Overhead": 30,
-            "Minimum Thinking Time": 20,
-            "Slow Mover": 80,
-            "UCI_Chess960": "false",
-            "UCI_LimitStrength": "false",
-            "UCI_Elo": 1350,
-        }
+        self.default_stockfish_params = {}
         self.stockfish = subprocess.Popen(
             path, universal_newlines=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE
         )
@@ -40,7 +25,7 @@ class Stockfish:
             self._read_line().split(" ")[1].split(".")[0]
         )
 
-        self._put("uci")
+        self._uci()
 
         self.depth = str(depth)
         self.info: str = ""
@@ -89,8 +74,31 @@ class Stockfish:
             raise BrokenPipeError()
         return self.stockfish.stdout.readline().strip()
 
+    def _uci(self) -> None:
+        self._put("uci")
+        while True:
+            line = self._read_line()
+            if line.startswith("option name"):
+                name = line.split("option name")[1].split("type")[0].strip()
+                type_ = line.split("type")[1].split("default")[0].strip()
+                if type_ == "button":
+                    value = None
+                else:
+                    try:
+                        value = line.split("default")[1].split()[0].strip()
+                        if type_ == "spin":
+                            value = int(value)
+                    except IndexError:  # stockfish 14 bug on "option name Debug Log File type string default" string has no default value
+                        value = ""
+                self.default_stockfish_params.update({name: value})
+            if "uciok" in line:
+                return
+
     def _set_option(self, name: str, value: Any) -> None:
-        self._put(f"setoption name {name} value {value}")
+        if name.lower() == "clear hash":
+            self._put(f"setoption name {name}")
+        else:
+            self._put(f"setoption name {name} value {value}")
         self._is_ready()
 
     def _is_ready(self) -> None:
