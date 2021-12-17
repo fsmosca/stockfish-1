@@ -17,6 +17,7 @@ class Stockfish:
         self, path: str = "stockfish", depth: int = 2, parameters: dict = None
     ) -> None:
         self.default_stockfish_params = {}
+        self.id = {}
         self.stockfish = subprocess.Popen(
             path, universal_newlines=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE
         )
@@ -91,6 +92,11 @@ class Stockfish:
                     except IndexError:  # stockfish 14 bug on "option name Debug Log File type string default" string has no default value
                         value = ""
                 self.default_stockfish_params.update({name: value})
+            elif line.startswith("id "):
+                if "id name" in line:
+                    self.id.update({"name": " ".join(line.split()[2:]).strip()})
+                elif "id author" in line:
+                    self.id.update({"author": " ".join(line.split()[2:]).strip()})
             if "uciok" in line:
                 return
 
