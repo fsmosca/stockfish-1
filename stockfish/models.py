@@ -6,7 +6,7 @@
 """
 
 import subprocess
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Dict
 import copy
 
 
@@ -16,9 +16,9 @@ class Stockfish:
     def __init__(
         self, path: str = "stockfish", depth: int = 2, parameters: dict = None
     ) -> None:
-        self.default_stockfish_params = {}
-        self._id = {}
-        self._options = []
+        self.default_stockfish_params: Dict[str, Any] = {}
+        self._id: Dict[str, str] = {}
+        self._options: List[str] = []
         self.stockfish = subprocess.Popen(
             path, universal_newlines=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE
         )
@@ -102,13 +102,13 @@ class Stockfish:
             if "uciok" in line:
                 return
 
-    def get_id_name(self):
+    def get_id_name(self) -> str:
         return self._id["name"]
 
-    def get_id_author(self):
+    def get_id_author(self) -> str:
         return self._id["author"]
 
-    def get_options(self):
+    def get_options(self) -> List[str]:
         return self._options
 
     def set_option(self, name: str, value: Any) -> None:
